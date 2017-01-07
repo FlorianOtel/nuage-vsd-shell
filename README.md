@@ -2,7 +2,7 @@
 
 A CLI shell for interacting with Nuage Networks VSD (Virtual Services Director). 
 
-It is written as a wrapper around [Golang libraries for Nuage Networks VSD API](https://github.com/nuagenetworks/vspk-go/). Based on (abiosoft/ishell)[https://github.com/abiosoft/ishell]
+It is written as a wrapper around [Golang libraries for Nuage Networks VSD API](https://github.com/nuagenetworks/vspk-go/). Based on [abiosoft/ishell](https://github.com/abiosoft/ishell)
 
 This is provided "as such", without any official support.
 
@@ -13,8 +13,7 @@ Thanks in advance for feedback, questions, raising issues, or contributing -- mu
 
 There are two types of shell commands:
 * Auxiliary commands for E.g.: Displaying the details of (existing) API connection. Currently a single API connection is supported at one time; Setting the debug
- level (only two levels supported -- a verbose "Debug" level and "Info"); Setting the API connection details (API endpoint and credentials) and initializing a co
-nnection
+ level (only two levels supported -- a verbose "Debug" level and "Info"); Setting the API connection details (API endpoint and credentials) and initializing a connection
 
 * Wrappers around the Nuage Networks API calls themselves: "GET", "CREATE", "DELETE" etc. See below for commands currently supported.
 
