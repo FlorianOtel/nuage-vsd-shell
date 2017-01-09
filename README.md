@@ -2,7 +2,7 @@
 
 A CLI shell for interacting with Nuage Networks VSD (Virtual Services Director). 
 
-It is written as a wrapper around [Golang libraries for Nuage Networks VSD API](https://github.com/nuagenetworks/vspk-go/). Based on [abiosoft/ishell](https://github.com/abiosoft/ishell)
+It is written as a wrapper around [Golang libraries for Nuage Networks VSD API](https://github.com/nuagenetworks/vspk-go/). Based on [abiosoft/ishell](https://github.com/abiosoft/ishell).
 
 This is provided "as such", without any official support.
 
