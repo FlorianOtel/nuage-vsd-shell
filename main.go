@@ -23,10 +23,10 @@ var (
 
 	// vsdurl, org, user, passwd string
 	// Temporary defaults
-	vsdurl = "https://172.16.254.7:8443"
-	org    = "csp"
-	user   = "csproot"
-	passwd = "csproot"
+	vsdurl = "https://127.0.0.1:8443"
+	org    = "org"
+	user   = "user"
+	passwd = ""
 )
 
 ////////

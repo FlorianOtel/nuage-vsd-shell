@@ -38,9 +38,15 @@ Debug level now set to: Debug
 >> setconn
 Set Nuage API connection Details: Endpoint IP address ; User + Password ; Nuage API version
   Enter your VSD IP address> 127.0.0.1
-  Enter your Enterprise (organization) name. Leave empty if default > org
-  Enter your username. Leave empty if default > user
-  Enter your password. Leave empty if default > ****
+  Enter your username > user
+  Enter your password > ****
+  Enter your Enterprise (organization) name > org
+
+
+>> makeconn
+VSD connection established
+
+
 ```
 
 ### API wrapper commands
