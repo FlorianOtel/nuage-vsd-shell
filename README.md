@@ -41,7 +41,7 @@ Set Nuage API connection Details: Endpoint IP address ; User + Password ; Nuage 
   Enter your Enterprise (organization) name. Leave empty if default > org
   Enter your username. Leave empty if default > user
   Enter your password. Leave empty if default > ****
-
+```
 
 ### API wrapper commands
 
