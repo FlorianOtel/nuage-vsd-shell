@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -10,9 +11,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	"github.com/FlorianOtel/go-bambou/bambou"
+	"github.com/FlorianOtel/vspk-go/vspk"
 	"github.com/howeyc/gopass"
-	"github.com/nuagenetworks/go-bambou/bambou"
-	"github.com/nuagenetworks/vspk-go/vspk"
 )
 
 var (
@@ -23,10 +24,12 @@ var (
 
 	// vsdurl, org, user, passwd string
 	// Temporary defaults
-	vsdurl = "https://127.0.0.1:8443"
-	org    = "org"
-	user   = "user"
-	passwd = ""
+	vsdurl    = "https://172.16.254.7:7443"
+	user      = "csproot"
+	passwd    = "csproot"
+	org       = "csp"
+	certfname = "/root/certlogin1.pem"
+	keyfname  = "/root/certlogin1-Key.pem"
 )
 
 ////////
@@ -42,7 +45,7 @@ func resetconn(args ...string) (string, error) {
 	return "", nil
 }
 
-// Establish Nuage API connection.
+// Establish Nuage API connection using user + password
 
 func makeconn(args ...string) (string, error) {
 
@@ -56,7 +59,7 @@ func makeconn(args ...string) (string, error) {
 
 	// fmt.Printf("===> My Bambou session is: %#v\n", *mysession)
 
-	mysession.SetInsecureSkipVerify(true)
+	// mysession.SetInsecureSkipVerify(true)
 
 	err := mysession.Start()
 
@@ -66,6 +69,37 @@ func makeconn(args ...string) (string, error) {
 		return "", err
 	} else {
 		return "Nuage VSD connection established", nil
+	}
+}
+
+// Establish Nuage API connection -- using certificates
+
+func makecertconn(args ...string) (string, error) {
+
+	if vsdurl == "" {
+		return "Invalid VSD url.Please set connection details using `setconn` command ", nil
+	}
+
+	if cert, err := tls.LoadX509KeyPair(certfname, keyfname); err != nil {
+
+		fmt.Printf("Loading TLS certificate and private key failed: ")
+		return "", err
+	} else {
+		mysession, root = vspk.NewX509Session(&cert, vsdurl)
+	}
+
+	// fmt.Printf("===> My VSD URL is: %s\n", vsdurl)
+
+	// fmt.Printf("===> My Bambou session is: %#v\n", *mysession)
+
+	// mysession.SetInsecureSkipVerify(true)
+
+	if err := mysession.Start(); err != nil {
+		resetconn()
+		fmt.Printf("Nuage TLS API connection failed: ")
+		return "", err
+	} else {
+		return "Nuage VSD TLS connection established", nil
 	}
 }
 
@@ -195,6 +229,8 @@ func main() {
 	shell.Register("setconn", setconn)
 
 	shell.Register("makeconn", makeconn)
+
+	shell.Register("makecertconn", makecertconn)
 
 	shell.Register("displayconn", displayconn)
 

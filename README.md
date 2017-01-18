@@ -32,11 +32,10 @@ Debug level now set to: Debug
 >> displayconn
 
     Endpoint URL: [https://127.0.0.1:8443]
-    API version: [v4_0]
     Not connected
 
 >> setconn
-Set Nuage API connection Details: Endpoint IP address ; User + Password ; Nuage API version
+Set Nuage API connection Details: Endpoint IP address ; User ; Password 
   Enter your VSD IP address> 127.0.0.1
   Enter your username > user
   Enter your password > ****
@@ -81,7 +80,6 @@ GET zones
 GET zones <ID>
 GET subnets
 GET subnets <ID>
-GET subnets <ID> <child>
 
 GET subnets <ID> vports
 GET subnets <ID> vminterfaces
