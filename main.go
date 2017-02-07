@@ -11,6 +11,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	netpolicy "github.com/FlorianOtel/network-policies"
+
 	"github.com/FlorianOtel/go-bambou/bambou"
 	"github.com/FlorianOtel/vspk-go/vspk"
 	"github.com/howeyc/gopass"
@@ -238,13 +240,73 @@ func main() {
 
 	//// Top-level CRUD operations
 	shell.Register("GET", Get)
-	//
-	// shell.Register("CREATE", Create)
-	//
+
+	shell.Register("CREATE", Create)
+
 	shell.Register("DELETE", Delete)
 
 	// start shell
 	shell.Start()
+}
+
+func Create(args ...string) (string, error) {
+
+	if root == nil {
+		return "Not Connected to a VSD server", nil
+	}
+
+	// 1 argument:  <entity>
+	// 2 arguments: <entity> <ID>
+	// 3 arguments: <entity> <ID> <children>
+
+	if len(args) < 1 || len(args) > 3 {
+		return "CREATE <entity> [ <ID> [ <children> ] ]  ", nil
+	}
+
+	entity := args[0]
+
+	switch entity {
+	case "Policy":
+		switch len(args) {
+		case 3: // CREATE Policy <filename> <DomainID>
+
+			// if npr, err := netpolicy.ReadPolicy("/mnt/gw-disk/Go/src/github.com/FlorianOtel/network-policies/samples/deny-all-policy.yaml"); err != nil {
+
+			npr, err := netpolicy.ReadPolicy(args[1])
+
+			if err != nil {
+				log.Fatalf("KABOOM reading policy from file %#s. Error: ", args[1], err)
+
+			}
+
+			domain := new(vspk.Domain)
+			domain.ID = args[2]
+			// if err := domain.Fetch(); err != nil {
+			// 	return "", err
+			// }
+			//
+			// Cast VSPK Domain to netpolicy Domain
+			pd := netpolicy.PolicyDomain(*domain)
+
+			// Apply Policy
+
+			if err := pd.ApplyPolicy(&npr); err != nil {
+				return "", err
+			} else {
+				fmt.Printf("\n\n====> Applied Policy: %#s <======\n%s\n\n", npr.Name, npr)
+			}
+		default:
+			fmt.Printf("Format: CREATE Policy <filename> <DomainID>\n")
+			return "", nil
+		}
+
+		return "CREATE Policy -- done ", nil
+
+	default:
+		// Unknown entity request
+		break
+	}
+	return "Don't know how to CREATE Nuage API entity: " + strings.Join(args, " "), nil
 }
 
 func Get(args ...string) (string, error) {
@@ -264,6 +326,86 @@ func Get(args ...string) (string, error) {
 	entity := args[0]
 
 	switch entity {
+	case "Policy":
+		switch len(args) {
+		case 3: // GET Policy <Name> <DomainID>
+			domain := new(vspk.Domain)
+			domain.ID = args[2]
+			// if err := domain.Fetch(); err != nil {
+			// 	return "", err
+			// }
+			//
+			// Cast VSPK Domain to netpolicy Domain
+			pd := netpolicy.PolicyDomain(*domain)
+
+			if p, err := pd.GetPolicyByName(args[1]); err != nil {
+				return "", err
+			} else {
+				fmt.Printf("\n\n====> Network Policy: %#s <======\n%s\n\n", p.Name, p)
+			}
+		default:
+			fmt.Printf("Format: GET Policy <Name> <DomainID>\n")
+			return "", nil
+		}
+
+		return "Policies list -- done ", nil
+
+	case "Policies":
+		switch len(args) {
+		case 2: // GET Policies <DomainID>
+			domain := new(vspk.Domain)
+			domain.ID = args[1]
+			// if err := domain.Fetch(); err != nil {
+			// 	return "", err
+			// }
+			//
+			// Cast VSPK Domain to netpolicy Domain
+			pd := netpolicy.PolicyDomain(*domain)
+
+			if ps, err := pd.GetPoliciesByType("Ingress"); err != nil {
+				return "", err
+			} else {
+				for _, p := range ps {
+					fmt.Printf("\n\n====> Network Policy: %#s <======\n%s\n\n", p.Name, p)
+				}
+			}
+		default:
+			fmt.Printf("Format: GET Policies <DomainID>\n")
+			return "", nil
+		}
+
+		return "Policies list -- done ", nil
+
+	case "IngressACLTemplates":
+		acls, err := root.IngressACLTemplates(&bambou.FetchingInfo{})
+
+		if err != nil {
+			fmt.Printf("GET IngressACLTemplates failed: ")
+			return "", err
+		}
+
+		for i, v := range acls {
+			acl, _ := json.MarshalIndent(*v, "", "\t")
+			fmt.Printf("\n ===> Ingress ACL Template nr [%d]: ID [%s], Name [%s] <=== \n%#s\n", i, acls[i].ID, acls[i].Name, string(acl))
+		}
+
+		return "Ingress ACL Templates list -- done", nil
+
+	case "IngressACLEntryTemplates":
+		acles, err := root.IngressACLEntryTemplates(&bambou.FetchingInfo{})
+
+		if err != nil {
+			fmt.Printf("GET IngressACLEntryTemplates failed: ")
+			return "", err
+		}
+
+		for i, v := range acles {
+			acle, _ := json.MarshalIndent(*v, "", "\t")
+			fmt.Printf("\n ===> Ingress ACL Entry Template nr [%d]: Description [%s],  ID [%s]  <=== \n%#s\n", i, acles[i].Description, acles[i].ID, string(acle))
+		}
+
+		return "Ingress ACL Templates list -- done", nil
+
 	case "containers": // GET containers
 		containerlist, err := root.Containers(&bambou.FetchingInfo{})
 
@@ -277,7 +419,7 @@ func Get(args ...string) (string, error) {
 			fmt.Printf("\n ===> Container nr [%d]: Name [%s] <=== \n%#s\n", i, containerlist[i].Name, string(container))
 		}
 
-		return "Enterprise list -- done", nil
+		return "Container list -- done", nil
 
 	case "enterprises":
 		switch len(args) {
@@ -652,7 +794,7 @@ func Get(args ...string) (string, error) {
 		// Unknown entity request
 		break
 	}
-	return "Don't know how to process Nuage API entity: " + strings.Join(args, " "), nil
+	return "Don't know how to GET Nuage API entity: " + strings.Join(args, " "), nil
 }
 
 func Delete(args ...string) (string, error) {
